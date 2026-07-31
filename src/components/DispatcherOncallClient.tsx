@@ -30,78 +30,26 @@ import {
 } from 'lucide-react'
 import Topbar from '@/components/Topbar'
 import { useLang } from '@/components/providers/LanguageProvider'
+import { 
+  Order, 
+  FleetVehicle, 
+  BreakdownLog, 
+  OnCallShift, 
+  CallLog, 
+  Waypoint, 
+  StatusLog, 
+  Attachment,
+  OrderStatus,
+  OrderSubStatus
+} from '@/types'
+import OrderTable from '@/components/orders/OrderTable'
+import FleetStatusGrid from '@/components/fleet/FleetStatusGrid'
+import OnCallScheduleView from '@/components/oncall/OnCallScheduleView'
+import BreakdownLogModal from '@/components/breakdown/BreakdownLogModal'
 
 interface Props {
   userName: string
   role: string
-}
-
-interface Waypoint {
-  id: string
-  type: 'loading' | 'unloading'
-  address: string
-}
-
-interface StatusLog {
-  status: string
-  timestamp: string
-  odometer: number
-  user: string
-  created_at: string
-  updated_at?: string
-  updated_by?: string
-}
-
-interface Attachment {
-  name: string
-  url: string
-  type: string // 'Surat Jalan' | 'Resi' | 'Kuitansi' | 'Approval' | 'Other'
-}
-
-interface Order {
-  id: string
-  orderNumber: string
-  unitType: 'TWB' | 'CDDL'
-  customer: string
-  shipper: string
-  tanggalJalan: string
-  costAllowance: number
-  rate: number
-  notes: string
-  nopol: string
-  driverName: string
-  driverPhone: string
-  odooSo: string
-  status: 'Draft/Request' | 'Dispatched' | 'In Progress' | 'Completed' | 'Closed' | 'Cancelled'
-  statusDetail: string // e.g. "Otw Muat", "Antri Muat", "Otw Bongkar"
-  waypoints: Waypoint[]
-  origin: string
-  destination: string
-  endPoint?: string
-  estimatedKm: number
-  estimatedDays: number
-  odometer: number
-  startOdo: number
-  historyLogs: StatusLog[]
-  attachments: Attachment[]
-  sjPhysicalDone: boolean
-  cancelNote?: string
-}
-
-interface FleetVehicle {
-  nopol: string
-  driver: string
-  location: string
-  fleetStatus: 'moving' | 'stopped' | 'idle' | 'breakdown'
-  orderStatus: string
-  statusDuration: string
-  doDuration: string
-  eta: string
-  nextPlan: string // 'planned' | 'empty'
-  type: 'TWB' | 'CDDL'
-  odometer?: number
-  maintenanceNotes?: string
-  maintenanceTime?: string
 }
 
 const INITIAL_FLEETS: FleetVehicle[] = [

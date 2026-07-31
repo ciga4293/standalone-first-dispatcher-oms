@@ -1,0 +1,30 @@
+name: 'dispatcher_oms_dbt'
+version: '1.0.0'
+config-version: 2
+
+# Top-level configuration for the dbt project
+profile: 'dispatcher_oms_profile'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Defining models architecture: Staging -> Intermediate -> Marts
+models:
+  dispatcher_oms_dbt:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: analytics

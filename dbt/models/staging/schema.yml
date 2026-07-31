@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: oltp
+    database: dispatcher_oncall_db
+    schema: public
+    tables:
+      - name: users
+      - name: drivers
+      - name: vehicles
+      - name: orders
+      - name: waypoints
+      - name: order_status_logs
+      - name: order_attachments
+      - name: breakdown_logs
+      - name: oncall_shifts
+      - name: call_logs

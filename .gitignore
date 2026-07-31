@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python venv & dbt artifacts
+/venv/
+/dbt/target/
+/dbt/dbt_packages/
+/dbt/logs/
