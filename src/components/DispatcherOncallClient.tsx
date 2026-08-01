@@ -700,6 +700,37 @@ export default function DispatcherOncallClient({ userName, role }: Props) {
 
     setOrders([newOrder, ...orders])
     setIsCreateOrderOpen(false) // Auto minimize
+
+    // Send POST request to FastAPI backend
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    fetch(`${backendUrl}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        order_number: newOrder.orderNumber,
+        unit_type: newOrder.unitType,
+        customer_name: newOrder.customer,
+        shipper_name: newOrder.shipper,
+        tanggal_jalan: newOrder.tanggalJalan.split(' ')[0],
+        rate: newOrder.rate,
+        cost_allowance: newOrder.costAllowance,
+        notes: newOrder.notes,
+        origin: newOrder.origin,
+        destination: newOrder.destination,
+        end_point: newOrder.endPoint,
+        estimated_km: newOrder.estimatedKm,
+        estimated_days: newOrder.estimatedDays,
+        waypoints: newWaypoints.map((w, idx) => ({
+          sequence_order: idx + 1,
+          waypoint_type: w.type,
+          address: w.address
+        }))
+      })
+    })
+      .then(res => res.json())
+      .then(() => fetchBackendData())
+      .catch(err => console.warn('Gagal menyimpan ke PostgreSQL DB:', err))
+
     // Reset Form fields
     setNewCustomer('')
     setNewShipper('')
