@@ -266,6 +266,79 @@ export default function DispatcherOncallClient({ userName, role }: Props) {
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS)
   const [fleets, setFleets] = useState<FleetVehicle[]>(INITIAL_FLEETS)
   
+  // Fetch real-time data from FastAPI Backend
+  const fetchBackendData = async () => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const [ordersRes, fleetRes] = await Promise.all([
+        fetch(`${backendUrl}/orders`).catch(() => null),
+        fetch(`${backendUrl}/fleet`).catch(() => null)
+      ])
+
+      if (ordersRes && ordersRes.ok) {
+        const dbOrders = await ordersRes.json()
+        if (Array.isArray(dbOrders) && dbOrders.length > 0) {
+          // Map DB columns (snake_case) to Frontend model (camelCase)
+          const mappedOrders: Order[] = dbOrders.map((o: any) => ({
+            id: o.id || String(Math.random()),
+            orderNumber: o.order_number || o.orderNumber || 'ORD-001',
+            unitType: o.unit_type || 'TWB',
+            customer: o.customer_name || o.customer || 'Customer',
+            shipper: o.shipper_name || o.shipper || 'Shipper',
+            tanggalJalan: o.tanggal_jalan ? String(o.tanggal_jalan) : '2026-07-31',
+            costAllowance: Number(o.cost_allowance || 0),
+            rate: Number(o.rate || 0),
+            notes: o.notes || '',
+            nopol: o.nopol || '',
+            driverName: o.driver_name || o.driverName || '',
+            driverPhone: o.driver_phone || '',
+            odooSo: o.odoo_so || '',
+            status: o.status || 'Draft/Request',
+            statusDetail: o.status_detail || '1. Otw Muat',
+            origin: o.origin || '',
+            destination: o.destination || '',
+            endPoint: o.end_point || '',
+            estimatedKm: Number(o.estimated_km || 0),
+            estimatedDays: Number(o.estimated_days || 0),
+            odometer: Number(o.end_odometer || 0),
+            startOdo: Number(o.start_odometer || 0),
+            waypoints: o.waypoints || [],
+            historyLogs: o.history_logs || [],
+            attachments: o.attachments || [],
+            sjPhysicalDone: Boolean(o.sj_physical_done)
+          }))
+          setOrders(mappedOrders)
+        }
+      }
+
+      if (fleetRes && fleetRes.ok) {
+        const dbFleets = await fleetRes.json()
+        if (Array.isArray(dbFleets) && dbFleets.length > 0) {
+          const mappedFleets: FleetVehicle[] = dbFleets.map((f: any) => ({
+            nopol: f.nopol,
+            driver: f.driver_name || f.driver || 'Unassigned',
+            location: f.current_location || 'Pool',
+            fleetStatus: f.fleet_status || 'idle',
+            orderStatus: f.fleet_status === 'moving' ? 'In Progress' : 'Empty',
+            statusDuration: '1h',
+            doDuration: '0h',
+            eta: 'N/A',
+            nextPlan: 'empty',
+            type: f.unit_type || 'TWB',
+            odometer: Number(f.last_odometer || 0)
+          }))
+          setFleets(mappedFleets)
+        }
+      }
+    } catch (err) {
+      console.warn('FastAPI backend connection error, using local fallback state:', err)
+    }
+  }
+
+  React.useEffect(() => {
+    fetchBackendData()
+  }, [])
+
   // Filtering & Search
   const [startDateFilter, setStartDateFilter] = useState('')
   const [endDateFilter, setEndDateFilter] = useState('')
