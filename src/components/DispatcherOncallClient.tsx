@@ -269,7 +269,10 @@ export default function DispatcherOncallClient({ userName, role }: Props) {
   // Fetch real-time data from FastAPI Backend
   const fetchBackendData = async () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      // Di browser (client-side), gunakan window.location.hostname jika NEXT_PUBLIC_API_URL tidak diset
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || `http://${hostname}:8000`
+      
       const [ordersRes, fleetRes] = await Promise.all([
         fetch(`${backendUrl}/orders`).catch(() => null),
         fetch(`${backendUrl}/fleet`).catch(() => null)
@@ -307,7 +310,12 @@ export default function DispatcherOncallClient({ userName, role }: Props) {
             attachments: o.attachments || [],
             sjPhysicalDone: Boolean(o.sj_physical_done)
           }))
-          setOrders(mappedOrders)
+          setOrders(prevOrders => {
+            // Gabungkan order dari DB dengan local created order jika belum ter-sync
+            const dbIds = new Set(mappedOrders.map(m => m.id))
+            const localOnly = prevOrders.filter(p => !dbIds.has(p.id))
+            return [...mappedOrders, ...localOnly]
+          })
         }
       }
 
@@ -331,7 +339,7 @@ export default function DispatcherOncallClient({ userName, role }: Props) {
         }
       }
     } catch (err) {
-      console.warn('FastAPI backend connection error, using local fallback state:', err)
+      console.warn('FastAPI backend connection error, retaining state:', err)
     }
   }
 
@@ -702,7 +710,9 @@ export default function DispatcherOncallClient({ userName, role }: Props) {
     setIsCreateOrderOpen(false) // Auto minimize
 
     // Send POST request to FastAPI backend
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || `http://${hostname}:8000`
+    
     fetch(`${backendUrl}/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
